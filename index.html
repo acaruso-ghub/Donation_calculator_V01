@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donation Value Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-active {
+            border-color: #3B82F6; /* blue-600 */
+            color: #3B82F6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Main Application Container -->
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Donation Value Calculator</h1>
+            <p class="text-gray-600 mt-2">Easily track and value your donated items based on fair market value.</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="mb-6 border-b border-gray-200">
+            <ul class="flex flex-wrap -mb-px" id="tabs-nav">
+                <li class="mr-2">
+                    <a href="#" class="inline-block p-4 border-b-2 rounded-t-lg tab-active" data-tab="calculator">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 00-1 1v1a1 1 0 001 1h6a1 1 0 001-1V5a1 1 0 00-1-1H7zM6 9a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
+                        Calculator
+                    </a>
+                </li>
+                <li class="mr-2">
+                    <a href="#" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-tab="donations">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" /></svg>
+                        Donation List <span id="donation-count" class="hidden ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">0</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tab-content">
+
+            <!-- Calculator Tab -->
+            <div id="calculator-tab" class="tab-pane bg-white p-6 rounded-lg shadow-md transition-opacity duration-300">
+                <form id="donation-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Item Category -->
+                        <div>
+                            <label for="item-category" class="block text-sm font-medium text-gray-700">Item Category</label>
+                            <select id="item-category" name="item-category" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option>Select a category</option>
+                            </select>
+                        </div>
+                        <!-- Item Description -->
+                        <div>
+                            <label for="item-description" class="block text-sm font-medium text-gray-700">Item Description</label>
+                            <select id="item-description" name="item-description" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" disabled>
+                                <option>Select an item</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="item-values-container" class="mt-6 border-t border-gray-200 pt-6">
+                         <div id="item-values" class="hidden mb-4 p-4 bg-gray-50 rounded-md text-sm transition-all duration-300">
+                            <p class="flex justify-between"><span>High Quality Value:</span> <span id="high-value" class="font-semibold text-green-600"></span></p>
+                            <p class="flex justify-between mt-1"><span>Medium Quality Value:</span> <span id="medium-value" class="font-semibold text-orange-500"></span></p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- High Quality Quantity -->
+                            <div>
+                                <label for="high-quality-qty" class="block text-sm font-medium text-gray-700">High Quality Items (Qty)</label>
+                                <input type="number" name="high-quality-qty" id="high-quality-qty" min="0" value="0" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            <!-- Medium Quality Quantity -->
+                            <div>
+                                <label for="medium-quality-qty" class="block text-sm font-medium text-gray-700">Medium Quality Items (Qty)</label>
+                                <input type="number" name="medium-quality-qty" id="medium-quality-qty" min="0" value="0" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 text-right">
+                        <button type="submit" id="add-donation-btn" disabled class="inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                            Add to Donation List
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Donations Tab -->
+            <div id="donations-tab" class="tab-pane hidden bg-white p-6 rounded-lg shadow-md transition-opacity duration-300">
+                <div id="empty-state" class="text-center text-gray-500 py-12">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No donations added yet</h3>
+                    <p class="mt-1 text-sm text-gray-500">Your donated items will appear here.</p>
+                </div>
+                <div id="donations-list-container" class="hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quality</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Item Value</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Value</th>
+                                    <th scope="col" class="relative px-6 py-3">
+                                        <span class="sr-only">Remove</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="donations-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Rows will be injected here by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6 pt-4 border-t-2 border-dashed text-right">
+                        <h3 class="text-xl font-semibold text-gray-800">Total Donation Value: <span id="total-value" class="text-blue-600">$0.00</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Raw CSV data from the provided file
+            const csvData = `Item Category,Item Description,High Quality Value,Medium Quality Value
+Automotive Supplies,Automotive: Amplifier,$81.71,$57.20
+Automotive Supplies,Automotive: Antenna Ornament,$5.10,$3.57
+Automotive Supplies,Automotive: Bra,$11.79,$8.25
+Automotive Supplies,Automotive: Car Cover,$18.52,$12.96
+Automotive Supplies,Automotive: Cassette Deck,$18.52,$12.96
+Automotive Supplies,Automotive: CD Changer: 10 Disc,$29.50,$20.65
+Automotive Supplies,Automotive: CD Changers: 12 Disc,$29.50,$20.65
+Automotive Supplies,Automotive: CD Changers: 6 Disc,$47.73,$33.41
+Automotive Supplies,Automotive: Cup Holder,$4.60,$3.22
+Automotive Supplies,Automotive: Dancing Hula Girl,$8.18,$5.73
+Automotive Supplies,Automotive: Dashboard Cover,$16.26,$11.38
+Automotive Supplies,Automotive: DVD Player,$49.26,$34.48
+Automotive Supplies,Automotive: Floor Mats (Set),$20.92,$14.64
+Automotive Supplies,Automotive: Fuzzy Dice,$5.36,$3.75
+Automotive Supplies,Automotive: Hood Ornament,$18.07,$12.65
+Automotive Supplies,Automotive: Ice Scraper,$3.08,$2.16
+Automotive Supplies,Automotive: Mud Flaps,$13.90,$9.73
+Automotive Supplies,Automotive: Parking Sensor,$7.75,$5.43
+Automotive Supplies,Automotive: Radar Detector,$40.92,$28.64
+Automotive Supplies,Automotive: Radio,$43.43,$30.40
+Automotive Supplies,Automotive: Satellite Radio,$63.60,$44.52
+Automotive Supplies,Automotive: Seat Covers,$23.70,$16.59
+Automotive Supplies,Automotive: Speakers,$23.47,$16.43
+Automotive Supplies,Automotive: Steering Wheel Cover,$12.66,$8.86
+Automotive Supplies,Automotive: Tire Chains,$31.43,$22.00
+Automotive Supplies,Automotive: Tire Gauge,$6.80,$4.76
+Automotive Supplies,Automotive: Truck Bed Liner,$50.93,$35.65
+Automotive Supplies,Automotive: Truck Topper,$221.75,$155.23
+Automotive Supplies,Automotive: Waxer/Polisher,$24.41,$17.09
+Automotive Supplies,Automotive: Window Defroster,$11.79,$8.25
+Automotive Supplies,Automotive: Windshield Wiper,$11.39,$7.97
+Baby,Activity Center,$18.89,$13.22
+Baby,Backpack,$16.88,$11.82
+Baby,Bassinet,$41.38,$28.97
+Baby,Bathtub,$10.86,$7.60
+Baby,Bedding Set,$23.18,$16.23
+Baby,Bib,$2.99,$2.09
+Baby,Blanket,$10.74,$7.52
+Baby,Blocks,$8.12,$5.68
+Baby,Bouncer,$21.49,$15.04
+Baby,Car Seat,$62.65,$43.86
+Baby,Carrier,$21.98,$15.39
+Baby,Changing Table,$53.95,$37.77
+Baby,Crib,$111.96,$78.37
+Baby,Crib Mobile,$16.33,$11.43
+Baby,Diaper Bag,$18.02,$12.61
+Baby,Exersaucer,$28.84,$20.19
+Baby,Gate,$20.21,$14.15
+Baby,High Chair,$44.91,$31.44
+Baby,Humidifier,$23.23,$16.26
+Baby,Infant Seat,$34.00,$23.80
+Baby,Johnny Jump Up,$17.61,$12.33
+Baby,Mobile,$16.33,$11.43
+Baby,Monitor,$29.17,$20.42
+Baby,Play Pen,$42.33,$29.63
+Baby,Playpen,$42.33,$29.63
+Baby,Potty Chair,$10.14,$7.10
+Baby,Rattles,$4.07,$2.85
+Baby,Safety Gate,$20.21,$14.15
+Baby,Shopping Cart Cover,$14.12,$9.88
+Baby,Sippy Cup,$3.43,$2.40
+Baby,Stroller,$50.84,$35.59
+Baby,Swing,$49.12,$34.38
+Baby,Vaporizer,$21.43,$15.00
+Baby,Walker,$22.79,$15.95
+Baby,Wipes Warmer,$13.99,$9.79
+Books,Art,$10.45,$4.18
+Books,Audio,$8.28,$3.31
+Books,Biography,$9.05,$3.62
+Books,Business,$9.85,$3.94
+Books,Children,$5.22,$2.09
+Books,Coffee Table,$13.11,$5.24
+Books,Comics,$4.31,$1.72
+Books,Computer,$10.18,$4.07
+Books,Cooking,$9.29,$3.72
+Books,Crafts,$8.28,$3.31
+Books,Dictionary,$8.65,$3.46
+Books,Drama,$7.21,$2.88
+Books,Education,$8.43,$3.37
+Books,Encyclopedia,$17.29,$6.92
+Books,Entertainment,$7.91,$3.16
+Books,Family,$8.65,$3.46
+Books,Fiction,$7.91,$3.16
+Books,Finance,$9.85,$3.94
+Books,Foreign,$9.44,$3.78
+Books,Health,$8.43,$3.37
+Books,History,$9.58,$3.83
+Books,Hobbies,$8.28,$3.31
+Books,Home,$8.90,$3.56
+Books,Horror,$7.06,$2.82
+Books,Humor,$7.62,$3.05
+Books,Language,$9.44,$3.78
+Books,Law,$13.26,$5.30
+Books,Literature,$7.91,$3.16
+Books,Magazine,$3.11,$1.24
+Books,Math,$11.36,$4.54
+Books,Medical,$13.59,$5.44
+Books,Men,$8.28,$3.31
+Books,Mystery,$7.06,$2.82
+Books,Nature,$8.90,$3.56
+Books,Non-Fiction,$8.13,$3.25
+Books,Parenting,$8.65,$3.46
+Books,Philosophy,$8.43,$3.37
+Books,Photography,$10.45,$4.18
+Books,Poetry,$7.21,$2.88
+Books,Politics,$9.58,$3.83
+Books,Professional,$11.36,$4.54
+Books,Psychology,$8.43,$3.37
+Books,Puzzles,$6.00,$2.40
+Books,Reference,$8.65,$3.46
+Books,Religion,$7.91,$3.16
+Books,Romance,$6.43,$2.57
+Books,Sci-Fi,$7.06,$2.82
+Books,Science,$11.36,$4.54
+Books,Self Help,$8.43,$3.37
+Books,Series,$21.43,$8.57
+Books,Social Science,$11.36,$4.54
+Books,Sports,$8.28,$3.31
+Books,Study Guides,$9.05,$3.62
+Books,Technical,$11.36,$4.54
+Books,Textbooks,$14.61,$5.84
+Books,Thesaurus,$8.65,$3.46
+Books,Thriller,$7.06,$2.82
+Books,Travel,$8.75,$3.50
+Books,True Crime,$7.77,$3.11
+Books,Women,$8.28,$3.31
+Books,Young Adult,$6.15,$2.46
+Clothing,Accessory: Arm Warmers,$8.75,$6.13
+Clothing,Accessory: Backpack,$17.64,$12.35
+Clothing,Accessory: Belt,$11.97,$8.38
+Clothing,Accessory: Beret,$10.18,$7.13
+Clothing,Accessory: Boots: Cowboy,$34.00,$23.80
+Clothing,Accessory: Boots: Fashion,$26.47,$18.53
+Clothing,Accessory: Boots: Hiking,$33.19,$23.23
+Clothing,Accessory: Boots: Rain,$16.33,$11.43
+Clothing,Accessory: Boots: Work,$39.31,$27.52
+Clothing,Accessory: Bow Tie,$8.90,$6.23
+Clothing,Accessory: Briefcase,$35.53,$24.87
+Clothing,Accessory: Child's Hat,$7.75,$5.43
+Clothing,Accessory: Child's Mittens,$6.28,$4.40
+Clothing,Accessory: Child's Purse,$7.75,$5.43
+Clothing,Accessory: Child's Scarf,$8.12,$5.68
+Clothing,Accessory: Child's Slippers,$7.75,$5.43
+Clothing,Accessory: Child's Socks,$2.64,$1.85
+Clothing,Accessory: Children's Gloves,$6.28,$4.40
+Clothing,Accessory: Children's Shoes,$12.78,$8.95
+Clothing,Accessory: Children's Tie,$6.28,$4.40
+Clothing,Accessory: Children's Tights,$4.19,$2.93
+Clothing,Accessory: Cleats,$18.73,$13.11
+Clothing,Accessory: Clogs,$18.02,$12.61
+Clothing,Accessory: Cloth Diapers,$5.22,$3.65
+Clothing,Accessory: Clutch,$13.99,$9.79
+Clothing,Accessory: Corset,$14.86,$10.40
+Clothing,Accessory: Cross Trainers,$26.12,$18.28
+Clothing,Accessory: Cummerbund,$11.97,$8.38
+Clothing,Accessory: Diaper Cover,$4.19,$2.93
+Clothing,Accessory: Fanny Pack,$9.14,$6.40
+Clothing,Accessory: Flats,$17.15,$12.01
+Clothing,Accessory: Flip Flops,$7.75,$5.43
+Clothing,Accessory: Garter Belt,$8.75,$6.13
+Clothing,Accessory: Gloves,$10.86,$7.60
+Clothing,Accessory: Hair Accessory,$5.36,$3.75
+Clothing,Accessory: Handbag,$21.43,$15.00
+Clothing,Accessory: Handkerchief,$4.19,$2.93
+Clothing,Accessory: Hat,$11.39,$7.97
+Clothing,Accessory: Hosiery,$4.74,$3.32
+Clothing,Accessory: Ice Skates,$23.63,$16.54
+Clothing,Accessory: Infant Shoes,$9.14,$6.40
+Clothing,Accessory: Insoles,$5.36,$3.75
+Clothing,Accessory: Jewelry Box,$18.89,$13.22
+Clothing,Accessory: Knee Highs,$4.19,$2.93
+Clothing,Accessory: Leg Warmers,$8.12,$5.68
+Clothing,Accessory: Leotard,$12.38,$8.67
+Clothing,Accessory: Loafers,$23.63,$16.54
+Clothing,Accessory: Luggage: Carry-on,$35.35,$24.75
+Clothing,Accessory: Luggage: Duffle,$24.75,$17.33
+Clothing,Accessory: Luggage: Garment Bag,$28.12,$19.68
+Clothing,Accessory: Luggage: Set,$96.16,$67.31
+Clothing,Accessory: Luggage: Suitcase,$46.99,$32.89
+Clothing,Accessory: Luggage: Trunk,$46.99,$32.89
+Clothing,Accessory: Men's Athletic Shoes,$25.26,$17.68
+Clothing,Accessory: Men's Casual Shoes,$24.41,$17.09
+Clothing,Accessory: Men's Dress Shoes,$29.86,$20.90
+Clothing,Accessory: Men's Sandals,$15.60,$10.92
+Clothing,Accessory: Men's Slippers,$11.97,$8.38
+Clothing,Accessory: Men's Socks,$3.55,$2.49
+Clothing,Accessory: Mittens,$8.12,$5.68
+Clothing,Accessory: Money Clip,$10.18,$7.13
+Clothing,Accessory: Muffler,$10.86,$7.60
+Clothing,Accessory: Pantyhose,$4.74,$3.32
+Clothing,Accessory: Pumps,$19.75,$13.83
+Clothing,Accessory: Purse,$21.43,$15.00
+Clothing,Accessory: Roller Skates,$27.10,$18.97
+Clothing,Accessory: Rollerblades,$34.00,$23.80
+Clothing,Accessory: Running Shoes,$26.12,$18.28
+Clothing,Accessory: Sandals,$14.73,$10.31
+Clothing,Accessory: Scarf,$9.70,$6.79
+Clothing,Accessory: Shawl,$13.11,$9.18
+Clothing,Accessory: Shoelaces,$2.64,$1.85
+Clothing,Accessory: Shoes,$20.59,$14.41
+Clothing,Accessory: Shoulder Pads,$5.36,$3.75
+Clothing,Accessory: Ski Boots,$50.08,$35.06
+Clothing,Accessory: Slippers,$10.18,$7.13
+Clothing,Accessory: Sneakers,$25.26,$17.68
+Clothing,Accessory: Spats,$9.43,$6.60
+Clothing,Accessory: Sunglasses,$10.86,$7.60
+Clothing,Accessory: Suspenders,$10.18,$7.13
+Clothing,Accessory: Tie,$11.39,$7.97
+Clothing,Accessory: Tie Clip,$8.90,$6.23
+Clothing,Accessory: Tie Tack,$8.90,$6.23
+Clothing,Accessory: Tights,$6.28,$4.40
+Clothing,Accessory: Tote Bag,$16.88,$11.82
+Clothing,Accessory: Umbrella,$10.86,$7.60
+Clothing,Accessory: Wallet,$13.11,$9.18
+Clothing,Accessory: Watch,$28.12,$19.68
+Clothing,Accessory: Wedding Gown,$214.28,$150.00
+Clothing,Accessory: Women's Athletic Shoes,$25.26,$17.68
+Clothing,Accessory: Women's Casual Shoes,$21.43,$15.00
+Clothing,Accessory: Women's Dress Shoes,$22.29,$15.60
+Clothing,Accessory: Women's Sandals,$15.60,$10.92
+Clothing,Accessory: Women's Slippers,$11.10,$7.77
+Clothing,Accessory: Wrap,$13.11,$9.18
+Clothing,Children's: Baby,$10.18,$7.13
+Clothing,Children's: Bathing Suit,$11.10,$7.77
+Clothing,Children's: Bathrobe,$13.99,$9.79
+Clothing,Children's: Blazer,$22.29,$15.60
+Clothing,Children's: Blouse,$10.86,$7.60
+Clothing,Children's: Bodysuit,$7.75,$5.43
+Clothing,Children's: Bunting,$16.33,$11.43
+Clothing,Children's: Capris,$11.97,$8.38
+Clothing,Children's: Christening Gown,$29.86,$20.90
+Clothing,Children's: Coat,$23.18,$16.23
+Clothing,Children's: Coveralls,$13.11,$9.18
+Clothing,Children's: Dress,$16.33,$11.43
+Clothing,Children's: Halloween Costume,$16.33,$11.43
+Clothing,Children's: Jacket,$18.89,$13.22
+Clothing,Children's: Jeans,$13.11,$9.18
+Clothing,Children's: Jumper,$13.99,$9.79
+Clothing,Children's: Nightgown,$10.18,$7.13
+Clothing,Children's: Onesie,$7.75,$5.43
+Clothing,Children's: Overalls,$13.11,$9.18
+Clothing,Children's: Pajamas,$10.86,$7.60
+Clothing,Children's: Pants,$11.97,$8.38
+Clothing,Children's: Play Clothes,$8.75,$6.13
+Clothing,Children's: Polo Shirt,$11.10,$7.77
+Clothing,Children's: Raincoat,$16.33,$11.43
+Clothing,Children's: Shirt,$10.18,$7.13
+Clothing,Children's: Shorts,$9.43,$6.60
+Clothing,Children's: Skirt,$11.10,$7.77
+Clothing,Children's: Sleep Sack,$11.97,$8.38
+Clothing,Children's: Sleeper,$10.18,$7.13
+Clothing,Children's: Snow Pants,$14.86,$10.40
+Clothing,Children's: Snowsuit,$22.29,$15.60
+Clothing,Children's: Suit,$34.00,$23.80
+Clothing,Children's: Sweater,$13.11,$9.18
+Clothing,Children's: Sweatpants,$10.18,$7.13
+Clothing,Children's: Sweatshirt,$11.10,$7.77
+Clothing,Children's: T-Shirt,$7.75,$5.43
+Clothing,Children's: Tank Top,$6.28,$4.40
+Clothing,Children's: Turtleneck,$10.18,$7.13
+Clothing,Children's: Underwear,$3.55,$2.49
+Clothing,Children's: Uniform,$13.99,$9.79
+Clothing,Children's: Vest,$11.97,$8.38
+Clothing,Men's: Bathing Suit,$13.99,$9.79
+Clothing,Men's: Bathrobe,$21.43,$15.00
+Clothing,Men's: Blazer,$42.74,$29.92
+Clothing,Men's: Boxer Shorts,$5.36,$3.75
+Clothing,Men's: Button-down Shirt,$14.86,$10.40
+Clothing,Men's: Capris,$18.02,$12.61
+Clothing,Men's: Cargo Pants,$18.02,$12.61
+Clothing,Men's: Coat,$49.99,$34.99
+Clothing,Men's: Coveralls,$22.29,$15.60
+Clothing,Men's: Dress Shirt,$14.86,$10.40
+Clothing,Men's: Fishing Vest,$18.89,$13.22
+Clothing,Men's: Fleece,$22.29,$15.60
+Clothing,Men's: Jacket,$34.86,$24.40
+Clothing,Men's: Jeans,$19.75,$13.83
+Clothing,Men's: Jumpsuit,$26.00,$18.20
+Clothing,Men's: Khakis,$17.15,$12.01
+Clothing,Men's: Leather Jacket,$64.28,$45.00
+Clothing,Men's: Long Underwear,$11.97,$8.38
+Clothing,Men's: Overalls,$22.29,$15.60
+Clothing,Men's: Pajamas,$17.15,$12.01
+Clothing,Men's: Pants,$18.02,$12.61
+Clothing,Men's: Polo Shirt,$14.86,$10.40
+Clothing,Men's: Pullover,$19.75,$13.83
+Clothing,Men's: Raincoat,$28.12,$19.68
+Clothing,Men's: Robe,$21.43,$15.00
+Clothing,Men's: Rugby Shirt,$18.89,$13.22
+Clothing,Men's: Shirt,$13.99,$9.79
+Clothing,Men's: Shorts,$13.99,$9.79
+Clothing,Men's: Ski Jacket,$59.63,$41.74
+Clothing,Men's: Slacks,$18.02,$12.61
+Clothing,Men's: Sport Coat,$42.74,$29.92
+Clothing,Men's: Suit,$96.16,$67.31
+Clothing,Men's: Sweater,$19.75,$13.83
+Clothing,Men's: Sweatpants,$13.99,$9.79
+Clothing,Men's: Sweatshirt,$14.86,$10.40
+Clothing,Men's: T-Shirt,$8.75,$6.13
+Clothing,Men's: Tank Top,$7.75,$5.43
+Clothing,Men's: Thermal Underwear,$11.97,$8.38
+Clothing,Men's: Tuxedo,$115.40,$80.78
+Clothing,Men's: Turtleneck,$14.86,$10.40
+Clothing,Men's: Undershirt,$4.74,$3.32
+Clothing,Men's: Uniform,$22.29,$15.60
+Clothing,Men's: Vest,$18.02,$12.61
+Clothing,Men's: Windbreaker,$18.89,$13.22
+Clothing,Women's: Bathing Suit,$18.02,$12.61
+Clothing,Women's: Bathrobe,$20.59,$14.41
+Clothing,Women's: Blazer,$29.86,$20.90
+Clothing,Women's: Blouse,$13.99,$9.79
+Clothing,Women's: Bra,$8.75,$6.13
+Clothing,Women's: Bridal Gown,$214.28,$150.00
+Clothing,Women's: Bridesmaid Dress,$53.57,$37.50
+Clothing,Women's: Camisole,$8.75,$6.13
+Clothing,Women's: Cape,$22.29,$15.60
+Clothing,Women's: Capris,$15.60,$10.92
+Clothing,Women's: Cargo Pants,$18.02,$12.61
+Clothing,Women's: Catsuit,$22.29,$15.60
+Clothing,Women's: Chemise,$11.97,$8.38
+Clothing,Women's: Coat,$48.21,$33.75
+Clothing,Women's: Cocktail Dress,$33.42,$23.39
+Clothing,Women's: Culottes,$14.86,$10.40
+Clothing,Women's: Dress,$22.29,$15.60
+Clothing,Women's: Evening Gown,$53.57,$37.50
+Clothing,Women's: Fleece,$21.43,$15.00
+Clothing,Women's: Formal,$53.57,$37.50
+Clothing,Women's: Fur Coat,$205.92,$144.14
+Clothing,Women's: Gauchos,$15.60,$10.92
+Clothing,Women's: Gown,$53.57,$37.50
+Clothing,Women's: Half Slip,$7.75,$5.43
+Clothing,Women's: Halter Top,$10.18,$7.13
+Clothing,Women's: Jacket,$29.86,$20.90
+Clothing,Women's: Jeans,$19.75,$13.83
+Clothing,Women's: Jumper,$18.89,$13.22
+Clothing,Women's: Jumpsuit,$22.29,$15.60
+Clothing,Women's: Khakis,$17.15,$12.01
+Clothing,Women's: Kimono,$22.29,$15.60
+Clothing,Women's: Leather Jacket,$60.91,$42.64
+Clothing,Women's: Lingerie,$11.97,$8.38
+Clothing,Women's: Long Underwear,$11.10,$7.77
+Clothing,Women's: Maternity,$18.89,$13.22
+Clothing,Women's: Muumuu,$18.02,$12.61
+Clothing,Women's: Negligee,$15.60,$10.92
+Clothing,Women's: Nightgown,$14.86,$10.40
+Clothing,Women's: Overalls,$18.89,$13.22
+Clothing,Women's: Pajamas,$17.15,$12.01
+Clothing,Women's: Panties,$4.19,$2.93
+Clothing,Women's: Pants,$17.15,$12.01
+Clothing,Women's: Pantsuit,$32.14,$22.50
+Clothing,Women's: Peignoir Set,$22.29,$15.60
+Clothing,Women's: Petticoat,$11.10,$7.77
+Clothing,Women's: Polo Shirt,$14.86,$10.40
+Clothing,Women's: Prom Dress,$53.57,$37.50
+Clothing,Women's: Pullover,$18.89,$13.22
+Clothing,Women's: Raincoat,$28.12,$19.68
+Clothing,Women's: Robe,$20.59,$14.41
+Clothing,Women's: Romper,$17.15,$12.01
+Clothing,Women's: Sarong,$11.97,$8.38
+Clothing,Women's: Shirt,$13.99,$9.79
+Clothing,Women's: Shorts,$13.11,$9.18
+Clothing,Women's: Shrug,$11.97,$8.38
+Clothing,Women's: Ski Jacket,$59.63,$41.74
+Clothing,Women's: Skirt,$15.60,$10.92
+Clothing,Women's: Skort,$14.86,$10.40
+Clothing,Women's: Slacks,$17.15,$12.01
+Clothing,Women's: Slip,$10.18,$7.13
+Clothing,Women's: Suit,$42.74,$29.92
+Clothing,Women's: Sundress,$18.02,$12.61
+Clothing,Women's: Sweater,$18.89,$13.22
+Clothing,Women's: Sweatpants,$13.11,$9.18
+Clothing,Women's: Sweatshirt,$14.86,$10.40
+Clothing,Women's: T-Shirt,$8.75,$6.13
+Clothing,Women's: Tank Top,$7.75,$5.43
+Clothing,Women's: Teddy,$11.97,$8.38
+Clothing,Women's: Thermal Underwear,$11.10,$7.77
+Clothing,Women's: Tube Top,$8.75,$6.13
+Clothing,Women's: Tunic,$14.86,$10.40
+Clothing,Women's: Turtleneck,$13.99,$9.79
+Clothing,Women's: Uniform,$21.43,$15.00
+Clothing,Women's: Unitard,$22.29,$15.60
+Clothing,Women's: Vest,$17.15,$12.01
+Clothing,Women's: Windbreaker,$18.02,$12.61
+Computers,All-in-One,$250.00,$175.00
+Computers,CD-ROM Drive,$18.89,$13.22
+Computers,CRT Monitor,$28.12,$19.68
+Computers,Case,$23.63,$16.54
+Computers,Copier,$106.94,$74.86
+Computers,Desktop,$188.92,$132.24
+Computers,Digital Camera,$53.57,$37.50
+Computers,Docking Station,$53.57,$37.50
+Computers,External Hard Drive,$48.21,$33.75
+Computers,Fax Machine,$42.74,$29.92
+Computers,Floppy Drive,$10.69,$7.48
+Computers,GPS,$80.16,$56.11
+Computers,Game Controller,$17.15,$12.01
+Computers,Hard Drive,$37.49,$26.24
+Computers,Joystick,$17.15,$12.01
+Computers,Keyboard,$16.33,$11.43
+Computers,LCD Monitor,$74.86,$52.40
+Computers,Laptop,$267.85,$187.50
+Computers,Memory,$18.89,$13.22
+Computers,Modem,$18.89,$13.22
+Computers,Monitor,$64.28,$45.00
+Computers,Motherboard,$42.74,$29.92
+Computers,Mouse,$12.78,$8.95
+Computers,Networking: Hub,$26.78,$18.75
+Computers,Networking: Router,$37.49,$26.24
+Computers,Networking: Switch,$26.78,$18.75
+Computers,PDA,$53.57,$37.50
+Computers,Palm Pilot,$53.57,$37.50
+Computers,Power Supply,$21.43,$15.00
+Computers,Printer: All-in-One,$85.71,$60.00
+Computers,Printer: Color,$53.57,$37.50
+Computers,Printer: Dot Matrix,$26.78,$18.75
+Computers,Printer: Inkjet,$53.57,$37.50
+Computers,Printer: Laser,$106.94,$74.86
+Computers,Printer: Photo,$64.28,$45.00
+Computers,Projector,$214.28,$150.00
+Computers,RAM,$18.89,$13.22
+Computers,Scanner,$48.21,$33.75
+Computers,Sound Card,$18.89,$13.22
+Computers,Speakers,$21.43,$15.00
+Computers,Surge Protector,$16.33,$11.43
+Computers,Trackball,$13.99,$9.79
+Computers,USB Hub,$13.99,$9.79
+Computers,Uninterruptible Power Supply (UPS),$42.74,$29.92
+Computers,Video Card,$32.14,$22.50
+Computers,Webcam,$18.02,$12.61
+Computers,Wireless Keyboard,$21.43,$15.00
+Computers,Wireless Mouse,$16.33,$11.43
+Computers,Wireless Network Card,$21.43,$15.00
+Electronics,Adapter,$11.97,$8.38
+Electronics,Alarm Clock,$10.86,$7.60
+Electronics,Answering Machine,$16.33,$11.43
+Electronics,Antenna,$16.33,$11.43
+Electronics,Audiocassette Player,$16.33,$11.43
+Electronics,Battery Charger,$13.99,$9.79
+Electronics,Binoculars,$26.78,$18.75
+Electronics,Boombox,$28.12,$19.68
+Electronics,CB Radio,$32.14,$22.50
+Electronics,CD Player,$26.78,$18.75
+Electronics,CD Player: Portable,$26.78,$18.75
+Electronics,Calculator,$10.86,$7.60
+Electronics,Camcorder,$106.94,$74.86
+Electronics,Camera,$42.74,$29.92
+Electronics,Camera: 35mm,$42.74,$29.92
+Electronics,Camera: Digital,$53.57,$37.50
+Electronics,Camera: Disposable,$5.36,$3.75
+Electronics,Camera: SLR,$106.94,$74.86
+Electronics,Clock Radio,$13.99,$9.79
+Electronics,Cordless Phone,$21.43,$15.00
+Electronics,DVD Player,$37.49,$26.24
+Electronics,DVD Recorder,$64.28,$45.00
+Electronics,Digital Photo Frame,$32.14,$22.50
+Electronics,EPIRB,$106.94,$74.86
+Electronics,Electric Eye,$13.99,$9.79
+Electronics,Equalizer,$42.74,$29.92
+Electronics,Film,$5.36,$3.75
+Electronics,Flash,$21.43,$15.00
+Electronics,GPS,$80.16,$56.11
+Electronics,Headphones,$13.99,$9.79
+Electronics,Home Theater System,$160.71,$112.50
+Electronics,Intercom,$26.78,$18.75
+Electronics,Karaoke Machine,$37.49,$26.24
+Electronics,MP3 Player,$42.74,$29.92
+Electronics,Microcassette Recorder,$21.43,$15.00
+Electronics,Microphone,$16.33,$11.43
+Electronics,PMP Player,$42.74,$29.92
+Electronics,Pager,$16.33,$11.43
+Electronics,Pedestal,$26.78,$18.75
+Electronics,Phone,$16.33,$11.43
+Electronics,Phonograph,$53.57,$37.50
+Electronics,Photo Album,$10.86,$7.60
+Electronics,Pocket Translator,$21.43,$15.00
+Electronics,Portable TV,$42.74,$29.92
+Electronics,Projector,$214.28,$150.00
+Electronics,Radar Detector,$40.92,$28.64
+Electronics,Radio,$21.43,$15.00
+Electronics,Receiver,$106.94,$74.86
+Electronics,Record Player,$53.57,$37.50
+Electronics,Remote Control,$13.99,$9.79
+Electronics,Satellite Dish,$53.57,$37.50
+Electronics,Satellite Radio,$63.60,$44.52
+Electronics,Scanner,$48.21,$33.75
+Electronics,Shelf System,$53.57,$37.50
+Electronics,Shortwave Radio,$42.74,$29.92
+Electronics,Slide Projector,$53.57,$37.50
+Electronics,Speakers,$42.74,$29.92
+Electronics,Stereo System,$106.94,$74.86
+Electronics,Stud Finder,$13.99,$9.79
+Electronics,Surround Sound System,$160.71,$112.50
+Electronics,TIVO,$85.71,$60.00
+Electronics,Tape Deck,$32.14,$22.50
+Electronics,Tape Recorder,$21.43,$15.00
+Electronics,Telephone,$16.33,$11.43
+Electronics,Telescope,$49.69,$34.78
+Electronics,Television: < 20"",$53.57,$37.50
+Electronics,"Television: 20""-30""",$106.94,$74.86
+Electronics,"Television: 31""-40""",$214.28,$150.00
+Electronics,"Television: > 40""",$321.42,$225.00
+Electronics,Television: Console,$106.94,$74.86
+Electronics,Television: HDTV,$321.42,$225.00
+Electronics,Television: LCD,$267.85,$187.50
+Electronics,Television: Plasma,$427.49,$299.24
+Electronics,Television: Projection,$214.28,$150.00
+Electronics,Tripod,$21.43,$15.00
+Electronics,Turntable,$42.74,$29.92
+Electronics,Two-Way Radio,$26.78,$18.75
+Electronics,VCR,$32.14,$22.50
+Electronics,VCR/DVD Combo,$53.57,$37.50
+Electronics,Video Camera,$106.94,$74.86
+Electronics,Walkman,$21.43,$15.00
+Furniture,Amusement Machine,$106.94,$74.86
+Furniture,Arcade Game,$106.94,$74.86
+Furniture,Armchair,$106.94,$74.86
+Furniture,Armoire,$214.28,$150.00
+Furniture,Baker's Rack,$85.71,$60.00
+Furniture,Bar,$214.28,$150.00
+Furniture,Bar Stool,$37.49,$26.24
+Furniture,Beanbag Chair,$21.43,$15.00
+Furniture,Bed,$214.28,$150.00
+Furniture,Bed: Bunk,$214.28,$150.00
+Furniture,Bed: Daybed,$160.71,$112.50
+Furniture,Bed: Double,$214.28,$150.00
+Furniture,Bed: Futon,$160.71,$112.50
+Furniture,Bed: Headboard,$85.71,$60.00
+Furniture,Bed: King,$267.85,$187.50
+Furniture,Bed: Murphy,$321.42,$225.00
+Furniture,Bed: Queen,$241.06,$168.74
+Furniture,Bed: Single,$160.71,$112.50
+Furniture,Bed: Sofa,$267.85,$187.50
+Furniture,Bed: Toddler,$85.71,$60.00
+Furniture,Bed: Trundle,$188.92,$132.24
+Furniture,Bed: Twin,$160.71,$112.50
+Furniture,Bed: Waterbed,$214.28,$150.00
+Furniture,Bench,$85.71,$60.00
+Furniture,Bookcase,$85.71,$60.00
+Furniture,Box Spring,$85.71,$60.00
+Furniture,Buffet,$214.28,$150.00
+Furniture,Cabinet,$160.71,$112.50
+Furniture,Chair,$85.71,$60.00
+Furniture,Chair: Club,$160.71,$112.50
+Furniture,Chair: Desk,$53.57,$37.50
+Furniture,Chair: Dining,$53.57,$37.50
+Furniture,Chair: Easy,$106.94,$74.86
+Furniture,Chair: Folding,$16.33,$11.43
+Furniture,Chair: High Chair,$44.91,$31.44
+Furniture,Chair: Lawn,$16.33,$11.43
+Furniture,Chair: Massage,$267.85,$187.50
+Furniture,Chair: Office,$53.57,$37.50
+Furniture,Chair: Recliner,$160.71,$112.50
+Furniture,Chair: Rocking,$85.71,$60.00
+Furniture,Chair: Wingback,$160.71,$112.50
+Furniture,Chaise Lounge,$188.92,$132.24
+Furniture,Changing Table,$53.95,$37.77
+Furniture,Chest,$160.71,$112.50
+Furniture,China Cabinet,$267.85,$187.50
+Furniture,Clock: Floor,$214.28,$150.00
+Furniture,Clock: Grandfather,$267.85,$187.50
+Furniture,Clock: Wall,$26.78,$18.75
+Furniture,Coffee Table,$85.71,$60.00
+Furniture,Couch,$267.85,$187.50
+Furniture,Cradle,$85.71,$60.00
+Furniture,Crib,$111.96,$78.37
+Furniture,Curio Cabinet,$160.71,$112.50
+Furniture,Dartboard,$26.78,$18.75
+Furniture,Desk,$106.94,$74.86
+Furniture,Dining Set,$321.42,$225.00
+Furniture,Display Case,$160.71,$112.50
+Furniture,Dresser,$160.71,$112.50
+Furniture,Dry Bar,$160.71,$112.50
+Furniture,End Table,$53.57,$37.50
+Furniture,Entertainment Center,$214.28,$150.00
+Furniture,File Cabinet,$53.57,$37.50
+Furniture,Fireplace Screen,$53.57,$37.50
+Furniture,Footstool,$26.78,$18.75
+Furniture,Furniture Set: Bedroom,$535.70,$375.00
+Furniture,Furniture Set: Dining Room,$427.49,$299.24
+Furniture,Furniture Set: Kitchen,$267.85,$187.50
+Furniture,Furniture Set: Living Room,$427.49,$299.24
+Furniture,Furniture Set: Patio,$160.71,$112.50
+Furniture,Futon,$160.71,$112.50
+Furniture,Gaming Table,$106.94,$74.86
+Furniture,Gun Cabinet,$160.71,$112.50
+Furniture,Hall Tree,$85.71,$60.00
+Furniture,Hammock,$42.74,$29.92
+Furniture,Hutch,$214.28,$150.00
+Furniture,Jukebox,$535.70,$375.00
+Furniture,Lamp,$26.78,$18.75
+Furniture,Lamp: Floor,$42.74,$29.92
+Furniture,Lamp: Table,$26.78,$18.75
+Furniture,Lawn Chair,$16.33,$11.43
+Furniture,Loveseat,$214.28,$150.00
+Furniture,Magazine Rack,$21.43,$15.00
+Furniture,Mattress,$106.94,$74.86
+Furniture,Mattress: Double,$106.94,$74.86
+Furniture,Mattress: King,$160.71,$112.50
+Furniture,Mattress: Queen,$133.92,$93.74
+Furniture,Mattress: Twin,$85.71,$60.00
+Furniture,Mirror,$42.74,$29.92
+Furniture,Nightstand,$53.57,$37.50
+Furniture,Ottoman,$53.57,$37.50
+Furniture,Patio Furniture,$160.71,$112.50
+Furniture,Piano,$535.70,$375.00
+Furniture,Piano Bench,$53.57,$37.50
+Furniture,Picnic Table,$85.71,$60.00
+Furniture,Pinball Machine,$214.28,$150.00
+Furniture,Ping Pong Table,$106.94,$74.86
+Furniture,Plant Stand,$26.78,$18.75
+Furniture,Playpen,$42.33,$29.63
+Furniture,Pool Table,$427.49,$299.24
+Furniture,Recliner,$160.71,$112.50
+Furniture,Rocking Chair,$85.71,$60.00
+Furniture,Room Divider,$53.57,$37.50
+Furniture,Rug,$85.71,$60.00
+Furniture,Screen,$53.57,$37.50
+Furniture,Sect,$321.42,$225.00
+Furniture,Shelf,$26.78,$18.75
+Furniture,Sideboard,$214.28,$150.00
+Furniture,Sofa,$267.85,$187.50
+Furniture,Sofa Bed,$267.85,$187.50
+Furniture,Stool,$26.78,$18.75
+Furniture,Table,$85.71,$60.00
+Furniture,Table: Card,$21.43,$15.00
+Furniture,Table: Coffee,$85.71,$60.00
+Furniture,Table: Console,$106.94,$74.86
+Furniture,Table: Dining,$160.71,$112.50
+Furniture,Table: End,$53.57,$37.50
+Furniture,Table: Folding,$26.78,$18.75
+Furniture,Table: Kitchen,$106.94,$74.86
+Furniture,Table: Picnic,$85.71,$60.00
+Furniture,Table: Pool,$427.49,$299.24
+Furniture,Table: Side,$53.57,$37.50
+Furniture,Table: Sofa,$85.71,$60.00
+Furniture,Television Stand,$53.57,$37.50
+Furniture,Throw Rug,$21.43,$15.00
+Furniture,Toy Box,$21.80,$15.26
+Furniture,Trunk,$85.71,$60.00
+Furniture,TV Stand,$53.57,$37.50
+Furniture,Vanity,$106.94,$74.86
+Furniture,Wardrobe,$160.71,$112.50
+Furniture,Wet Bar,$214.28,$150.00
+Home & Garden,Air Conditioner,$106.94,$74.86
+Home & Garden,Air Hockey Table,$106.94,$74.86
+Home & Garden,Air Purifier,$42.74,$29.92
+Home & Garden,Artwork,$53.57,$37.50
+Home & Garden,BBQ,$85.71,$60.00
+Home & Garden,Bakeware,$16.33,$11.43
+Home & Garden,Barbecue,$85.71,$60.00
+Home & Garden,Basket,$10.86,$7.60
+Home & Garden,Bedding,$42.74,$29.92
+Home & Garden,Bird Bath,$26.78,$18.75
+Home & Garden,Bird Cage,$32.14,$22.50
+Home & Garden,Bird Feeder,$16.33,$11.43
+Home & Garden,Blender,$21.43,$15.00
+Home & Garden,Blinds,$26.78,$18.75
+Home & Garden,Bread Machine,$42.74,$29.92
+Home & Garden,Broiler,$26.78,$18.75
+Home & Garden,Broom,$8.75,$6.13
+Home & Garden,Bunk Bed,$214.28,$150.00
+Home & Garden,Can Opener,$10.86,$7.60
+Home & Garden,Candle Holders,$10.86,$7.60
+Home & Garden,Canner,$26.78,$18.75
+Home & Garden,Canning Jars,$10.86,$7.60
+Home & Garden,Carpet,$85.71,$60.00
+Home & Garden,Carpet Cleaner,$85.71,$60.00
+Home & Garden,Ceiling Fan,$53.57,$37.50
+Home & Garden,Chainsaw,$85.71,$60.00
+Home & Garden,Chandelier,$85.71,$60.00
+Home & Garden,Christmas Decorations,$21.43,$15.00
+Home & Garden,Christmas Tree,$42.74,$29.92
+Home & Garden,Clock,$26.78,$18.75
+Home & Garden,Clothes Dryer,$160.71,$112.50
+Home & Garden,Clothes Hamper,$16.33,$11.43
+Home & Garden,Coffee Grinder,$13.99,$9.79
+Home & Garden,Coffee Maker,$21.43,$15.00
+Home & Garden,Comforter,$42.74,$29.92
+Home & Garden,Convection Oven,$53.57,$37.50
+Home & Garden,Cookware,$42.74,$29.92
+Home & Garden,Cooler,$18.89,$13.22
+Home & Garden,Crock Pot,$21.43,$15.00
+Home & Garden,Curling Iron,$13.99,$9.79
+Home & Garden,Curtains,$21.43,$15.00
+Home & Garden,Cutting Board,$10.86,$7.60
+Home & Garden,Deep Fryer,$26.78,$18.75
+Home & Garden,Dehumidifier,$85.71,$60.00
+Home & Garden,Dinnerware,$32.14,$22.50
+Home & Garden,Dishwasher,$160.71,$112.50
+Home & Garden,Door,$53.57,$37.50
+Home & Garden,Drapes,$32.14,$22.50
+Home & Garden,Drill,$32.14,$22.50
+Home & Garden,Dryer,$160.71,$112.50
+Home & Garden,Duvet,$42.74,$29.92
+Home & Garden,Edger,$53.57,$37.50
+Home & Garden,Electric Blanket,$32.14,$22.50
+Home & Garden,Electric Can Opener,$13.99,$9.79
+Home & Garden,Electric Drill,$32.14,$22.50
+Home & Garden,Electric Griddle,$21.43,$15.00
+Home & Garden,Electric Knife,$16.33,$11.43
+Home & Garden,Electric Mixer,$21.43,$15.00
+Home & Garden,Electric Shaver,$26.78,$18.75
+Home & Garden,Electric Skillet,$21.43,$15.00
+Home & Garden,Electric Wok,$26.78,$18.75
+Home & Garden,Espresso Machine,$85.71,$60.00
+Home & Garden,Fan,$21.43,$15.00
+Home & Garden,Fire Extinguisher,$21.43,$15.00
+Home & Garden,Fireplace Tools,$42.74,$29.92
+Home & Garden,Flatware,$26.78,$18.75
+Home & Garden,Flower Pot,$10.86,$7.60
+Home & Garden,Fondue Pot,$21.43,$15.00
+Home & Garden,Food Dehydrator,$32.14,$22.50
+Home & Garden,Food Processor,$42.74,$29.92
+Home & Garden,Fountain,$53.57,$37.50
+Home & A Garden,Frame,$16.33,$11.43
+Home & Garden,Freezer,$160.71,$112.50
+Home & Garden,Fryer,$26.78,$18.75
+Home & Garden,Futon,$160.71,$112.50
+Home & Garden,Garbage Can,$16.33,$11.43
+Home & Garden,Garbage Disposal,$53.57,$37.50
+Home & Garden,Garden Gnome,$16.33,$11.43
+Home & Garden,Garden Tools,$21.43,$15.00
+Home & Garden,Gas Grill,$106.94,$74.86
+Home & Garden,Generator,$267.85,$187.50
+Home & Garden,Glassware,$21.43,$15.00
+Home & Garden,Griddle,$21.43,$15.00
+Home & Garden,Grill,$85.71,$60.00
+Home & Garden,Hair Dryer,$16.33,$11.43
+Home & Garden,Hammer,$10.86,$7.60
+Home & Garden,Hamper,$16.33,$11.43
+Home & Garden,Hand Mixer,$16.33,$11.43
+Home & Garden,Hand Tools,$32.14,$22.50
+Home & Garden,Hedge Trimmer,$32.14,$22.50
+Home & Garden,Heater,$42.74,$29.92
+Home & Garden,Heating Pad,$13.99,$9.79
+Home & Garden,Hose,$21.43,$15.00
+Home & Garden,Hot Plate,$16.33,$11.43
+Home & Garden,Humidifier,$23.23,$16.26
+Home & Garden,Ice Cream Maker,$26.78,$18.75
+Home & Garden,Indoor Grill,$42.74,$29.92
+Home & Garden,Iron,$18.89,$13.22
+Home & Garden,Ironing Board,$18.89,$13.22
+Home & Garden,Juicer,$32.14,$22.50
+Home & Garden,Kitchen Utensils,$16.33,$11.43
+Home & Garden,Knife Set,$32.14,$22.50
+Home & Garden,Ladder,$42.74,$29.92
+Home & Garden,Lamp,$26.78,$18.75
+Home & Garden,Lawn Mower,$106.94,$74.86
+Home & Garden,Lawn Sprinkler,$16.33,$11.43
+Home & Garden,Leaf Blower,$53.57,$37.50
+Home & Garden,Light Fixture,$32.14,$22.50
+Home & Garden,Linens,$21.43,$15.00
+Home & Garden,Malt Machine,$21.43,$15.00
+Home & Garden,Massage Chair,$267.85,$187.50
+Home & Garden,Mattress Pad,$21.43,$15.00
+Home & Garden,Microwave,$53.57,$37.50
+Home & Garden,Mixer,$21.43,$15.00
+Home & Garden,Mop,$10.86,$7.60
+Home & Garden,Mug,$4.19,$2.93
+Home & Garden,Napkins,$8.75,$6.13
+Home & Garden,Outdoor Grill,$85.71,$60.00
+Home & Garden,Oven,$214.28,$150.00
+Home & Garden,Painting,$53.57,$37.50
+Home & Garden,Pasta Maker,$26.78,$18.75
+Home & Garden,Patio Heater,$106.94,$74.86
+Home & Garden,Pet Bed,$21.43,$15.00
+Home & Garden,Pet Carrier,$26.78,$18.75
+Home & Garden,Pet Crate,$42.74,$29.92
+Home & Garden,Picture Frame,$16.33,$11.43
+Home & Garden,Pillows,$13.99,$9.79
+Home & Garden,Pizza Oven,$53.57,$37.50
+Home & Garden,Placemats,$10.86,$7.60
+Home & Garden,Planter,$16.33,$11.43
+Home & Garden,Popcorn Popper,$18.89,$13.22
+Home & Garden,Poster,$10.86,$7.60
+Home & Garden,Pots & Pans,$42.74,$29.92
+Home & Garden,Power Tool,$42.74,$29.92
+Home & Garden,Power Washer,$106.94,$74.86
+Home & Garden,Pressure Cooker,$32.14,$22.50
+Home & Garden,Punch Bowl,$21.43,$15.00
+Home & Garden,Quilt,$42.74,$29.92
+Home & Garden,Range,$214.28,$150.00
+Home & Garden,Refrigerator,$214.28,$150.00
+Home & Garden,Rice Cooker,$21.43,$15.00
+Home & Garden,Roaster,$26.78,$18.75
+Home & Garden,Rotisserie,$42.74,$29.92
+Home & Garden,Rug,$85.71,$60.00
+Home & Garden,Safe,$85.71,$60.00
+Home & Garden,Salad Spinner,$13.99,$9.79
+Home & Garden,Saw,$26.78,$18.75
+Home & Garden,Scale,$16.33,$11.43
+Home & Garden,Sculpture,$53.57,$37.50
+Home & Garden,Serving Tray,$16.33,$11.43
+Home & Garden,Sewing Machine,$85.71,$60.00
+Home & Garden,Shades,$21.43,$15.00
+Home & Garden,Shredder,$26.78,$18.75
+Home & Garden,Silverware,$26.78,$18.75
+Home & Garden,Sleeping Bag,$26.78,$18.75
+Home & Garden,Slow Cooker,$21.43,$15.00
+Home & Garden,Smoke Detector,$13.99,$9.79
+Home & Garden,Snow Blower,$214.28,$150.00
+Home & Garden,Space Heater,$42.74,$29.92
+Home & Garden,Sprinkler,$16.33,$11.43
+Home & Garden,Steam Cleaner,$53.57,$37.50
+Home & Garden,Steamer,$21.43,$15.00
+Home & Garden,Stove,$214.28,$150.00
+Home & Garden,Sump Pump,$53.57,$37.50
+Home & Garden,Tablecloth,$13.99,$9.79
+Home & Garden,Tapestry,$32.14,$22.50
+Toaster,$16.33,$11.43
+Toaster Oven,$26.78,$18.75
+Tool Set,$53.57,$37.50
+Tools,$32.14,$22.50
+Torchiere,$21.43,$15.00
+Towels,$13.99,$9.79
+Trash Compactor,$160.71,$112.50
+Trellis,$21.43,$15.00
+Vacuum Cleaner,$53.57,$37.50
+Vase,$16.33,$11.43
+Waffle Iron,$21.43,$15.00
+Wallpaper,$16.33,$11.43
+Washer,$160.71,$112.50
+Washer/Dryer Combo,$267.85,$187.50
+Washing Machine,$160.71,$112.50
+Water Cooler,$85.71,$60.00
+Water Filter,$21.43,$15.00
+Water Heater,$160.71,$112.50
+Water Softener,$214.28,$150.00
+Weather Station,$26.78,$18.75
+Weed Eater,$53.57,$37.50
+Wheelbarrow,$32.14,$22.50
+Window,$42.74,$29.92
+Wine Cooler,$106.94,$74.86
+Wine Rack,$26.78,$18.75
+Wok,$21.43,$15.00
+Home & Garden,Yogurt Maker,$18.89,$13.22
+Media,Blu-Ray,$8.75,$6.13
+Media,Box Set,$18.89,$13.22
+Media,CD,$6.28,$4.40
+Media,CDs,$6.28,$4.40
+Media,Cassette,$4.19,$2.93
+Media,DVD,$7.75,$5.43
+Media,DVDs,$7.75,$5.43
+Media,Eight Track,$3.55,$2.49
+Media,Laserdisc,$5.36,$3.75
+Media,LP,$4.19,$2.93
+Media,Movie,$7.75,$5.43
+Media,Music,$6.28,$4.40
+Media,Phonograph Record,$4.19,$2.93
+Media,Record,$4.19,$2.93
+Media,Software,$16.33,$11.43
+Media,Tape,$4.19,$2.93
+Media,VHS,$4.19,$2.93
+Media,Video Game,$11.97,$8.38
+Media,Vinyl,$4.19,$2.93
+Musical Instruments,Accordion,$160.71,$112.50
+Musical Instruments,Acoustic Guitar,$85.71,$60.00
+Musical Instruments,Amplifier,$106.94,$74.86
+Musical Instruments,Bagpipe,$267.85,$187.50
+Musical Instruments,Banjo,$106.94,$74.86
+Musical Instruments,Bass Guitar,$106.94,$74.86
+Musical Instruments,Bassoon,$535.70,$375.00
+Musical Instruments,Bongos,$42.74,$29.92
+Musical Instruments,Bugle,$53.57,$37.50
+Musical Instruments,Cello,$267.85,$187.50
+Musical Instruments,Clarinet,$106.94,$74.86
+Musical Instruments,Conga,$85.71,$60.00
+Musical Instruments,Cymbal,$42.74,$29.92
+Musical Instruments,Didgeridoo,$42.74,$29.92
+Musical Instruments,Drum,$53.57,$37.50
+Musical Instruments,Drum Machine,$106.94,$74.86
+Musical Instruments,Drum Set,$267.85,$187.50
+Musical Instruments,Dulcimer,$106.94,$74.86
+Musical Instruments,Electric Guitar,$160.71,$112.50
+Musical Instruments,Electric Keyboard,$106.94,$74.86
+Musical Instruments,Electric Piano,$214.28,$150.00
+Musical Instruments,Flute,$85.71,$60.00
+Musical Instruments,French Horn,$267.85,$187.50
+Musical Instruments,Gong,$85.71,$60.00
+Musical Instruments,Guitar,$106.94,$74.86
+Musical Instruments,Harmonica,$13.99,$9.79
+Musical Instruments,Harp,$535.70,$375.00
+Musical Instruments,Harpsichord,$857.13,$600.00
+Musical Instruments,Keyboard,$106.94,$74.86
+Musical Instruments,Lute,$160.71,$112.50
+Musical Instruments,Mandolin,$85.71,$60.00
+Musical Instruments,Metronome,$21.43,$15.00
+Musical Instruments,Mixer,$160.71,$112.50
+Musical Instruments,Music Stand,$21.43,$15.00
+Musical Instruments,Oboe,$427.49,$299.24
+Musical Instruments,Organ,$427.49,$299.24
+Musical Instruments,Piano,$535.70,$375.00
+Musical Instruments,Piccolo,$85.71,$60.00
+Musical Instruments,Recorder,$10.86,$7.60
+Musical Instruments,Saxophone,$214.28,$150.00
+Musical Instruments,Sheet Music,$5.36,$3.75
+Musical Instruments,Sitar,$160.71,$112.50
+Musical Instruments,Synthesizer,$160.71,$112.50
+Musical Instruments,Tambourine,$13.99,$9.79
+Musical Instruments,Trombone,$160.71,$112.50
+Musical Instruments,Trumpet,$106.94,$74.86
+Musical Instruments,Tuba,$535.70,$375.00
+Musical Instruments,Ukulele,$32.14,$22.50
+Musical Instruments,Viola,$160.71,$112.50
+Musical Instruments,Violin,$106.94,$74.86
+Musical Instruments,Xylophone,$42.74,$29.92
+Musical Instruments,Zither,$85.71,$60.00
+Office Supplies,3-Hole Punch,$11.97,$8.38
+Office Supplies,Binder,$5.36,$3.75
+Office Supplies,Briefcase,$35.53,$24.87
+Office Supplies,Bulletin Board,$18.89,$13.22
+Office Supplies,Business Card Holder,$8.75,$6.13
+Office Supplies,Calculator,$10.86,$7.60
+Office Supplies,Calendar,$8.75,$6.13
+Office Supplies,Clipboard,$5.36,$3.75
+Office Supplies,Copier,$106.94,$74.86
+Office Supplies,Copy Paper,$21.43,$15.00
+Office Supplies,Correction Fluid,$3.55,$2.49
+Office Supplies,Desk Organizer,$13.99,$9.79
+Office Supplies,Desk Pad,$11.97,$8.38
+Office Supplies,Dictionary,$8.65,$3.46
+Office Supplies,Digital Recorder,$26.78,$18.75
+Office Supplies,Envelopes,$8.75,$6.13
+Office Supplies,Eraser,$2.64,$1.85
+Office Supplies,Fax Machine,$42.74,$29.92
+Office Supplies,File Cabinet,$53.57,$37.50
+Office Supplies,File Folders,$8.75,$6.13
+Office Supplies,Glue,$3.55,$2.49
+Office Supplies,Highlighters,$5.36,$3.75
+Office Supplies,Index Cards,$4.19,$2.93
+Office Supplies,Labels,$8.75,$6.13
+Office Supplies,Laminator,$32.14,$22.50
+Office Supplies,Legal Pad,$4.19,$2.93
+Office Supplies,Letter Opener,$5.36,$3.75
+Office Supplies,Markers,$8.75,$6.13
+Office Supplies,Notebook,$5.36,$3.75
+Office Supplies,Overhead Projector,$53.57,$37.50
+Office Supplies,Paper,$21.43,$15.00
+Office Supplies,Paper Clips,$3.55,$2.49
+Office Supplies,Paper Shredder,$26.78,$18.75
+Office Supplies,Paperweight,$8.75,$6.13
+Office Supplies,Pen,$5.36,$3.75
+Office Supplies,Pencil,$4.19,$2.93
+Office Supplies,Pencil Case,$5.36,$3.75
+Office Supplies,Pencil Sharpener,$8.75,$6.13
+Office Supplies,Planner,$11.97,$8.38
+Office Supplies,Portfolio,$16.33,$11.43
+Office Supplies,Post-it Notes,$4.19,$2.93
+Office Supplies,Presentation Board,$21.43,$15.00
+Office Supplies,Printer,$85.71,$60.00
+Office Supplies,Projector,$214.28,$150.00
+Office Supplies,Pushpins,$3.55,$2.49
+Office Supplies,Rolodex,$11.97,$8.38
+Office Supplies,Rubber Bands,$3.55,$2.49
+Office Supplies,Rubber Stamp,$8.75,$6.13
+Office Supplies,Ruler,$3.55,$2.49
+Office Supplies,Scanner,$48.21,$33.75
+Office Supplies,Scissors,$5.36,$3.75
+Office Supplies,Scotch Tape,$3.55,$2.49
+Office Supplies,Staple Gun,$11.97,$8.38
+Office Supplies,Staple Remover,$3.55,$2.49
+Office Supplies,Stapler,$8.75,$6.13
+Office Supplies,Stationery,$10.86,$7.60
+Office Supplies,Stenography Machine,$106.94,$74.86
+Office Supplies,Tape,$3.55,$2.49
+Office Supplies,Tape Dispenser,$5.36,$3.75
+Office Supplies,Thesaurus,$8.65,$3.46
+Office Supplies,Thumbtacks,$3.55,$2.49
+Office Supplies,Typewriter,$32.14,$22.50
+Office Supplies,Whiteboard,$26.78,$18.75
+Sporting Goods,Abdominal Machine,$42.74,$29.92
+Sporting Goods,Archery Set,$32.14,$22.50
+Sporting Goods,Badminton Set,$21.43,$15.00
+Sporting Goods,Ball,$10.86,$7.60
+Sporting Goods,Baseball,$5.36,$3.75
+Sporting Goods,Baseball Bat,$18.89,$13.22
+Sporting Goods,Baseball Glove,$21.43,$15.00
+Sporting Goods,Basketball,$13.99,$9.79
+Sporting Goods,Basketball Hoop,$85.71,$60.00
+Sporting Goods,Bicycle,$106.94,$74.86
+Sporting Goods,Bicycle Helmet,$18.89,$13.22
+Sporting Goods,Billiard Table,$427.49,$299.24
+Sporting Goods,Boating,$106.94,$74.86
+Sporting Goods,Bocce Ball Set,$26.78,$18.75
+Sporting Goods,Bodyboard,$21.43,$15.00
+Sporting Goods,Boots,$32.14,$22.50
+Sporting Goods,Bow,$26.78,$18.75
+Sporting Goods,Bowling Ball,$26.78,$18.75
+Sporting Goods,Bowling Shoes,$21.43,$15.00
+Sporting Goods,Boxing Gloves,$21.43,$15.00
+Sporting Goods,Camping,$42.74,$29.92
+Sporting Goods,Canoe,$214.28,$150.00
+Sporting Goods,Catcher's Mask,$21.43,$15.00
+Sporting Goods,Cleats,$18.73,$13.11
+Sporting Goods,Climbing,$42.74,$29.92
+Sporting Goods,Cooler,$18.89,$13.22
+Sporting Goods,Croquet Set,$26.78,$18.75
+Sporting Goods,Cycling,$53.57,$37.50
+Sporting Goods,Dartboard,$26.78,$18.75
+Sporting Goods,Dumbbells,$21.43,$15.00
+Sporting Goods,Elliptical,$214.28,$150.00
+Sporting Goods,Exercise Ball,$16.33,$11.43
+Sporting Goods,Exercise Bike,$106.94,$74.86
+Sporting Goods,Exercise Equipment,$85.71,$60.00
+Sporting Goods,Exercise Mat,$16.33,$11.43
+Sporting Goods,Fencing,$53.57,$37.50
+Sporting Goods,Figure Skates,$26.78,$18.75
+Sporting Goods,Fishing,$26.78,$18.75
+Sporting Goods,Fishing Pole,$21.43,$15.00
+Sporting Goods,Fishing Rod,$21.43,$15.00
+Sporting Goods,Football,$13.99,$9.79
+Sporting Goods,Football Helmet,$32.14,$22.50
+Sporting Goods,Football Pads,$26.78,$18.75
+Sporting Goods,Frisbee,$5.36,$3.75
+Sporting Goods,Gloves,$16.33,$11.43
+Sporting Goods,Goal,$42.74,$29.92
+Sporting Goods,Goggles,$13.99,$9.79
+Sporting Goods,Golf Bag,$53.57,$37.50
+Sporting Goods,Golf Ball,$10.86,$7.60
+Sporting Goods,Golf Cart,$535.70,$375.00
+Sporting Goods,Golf Club,$21.43,$15.00
+Sporting Goods,Golf Clubs (Set),$160.71,$112.50
+Sporting Goods,Golf Shoes,$26.78,$18.75
+Sporting Goods,Gun,$106.94,$74.86
+Sporting Goods,Gun Case,$26.78,$18.75
+Sporting Goods,Gym Bag,$21.43,$15.00
+Sporting Goods,Hang Glider,$535.70,$375.00
+Sporting Goods,Hockey,$26.78,$18.75
+Sporting Goods,Hockey Puck,$4.19,$2.93
+Sporting Goods,Hockey Skates,$32.14,$22.50
+Sporting Goods,Hockey Stick,$21.43,$15.00
+Sporting Goods,Home Gym,$267.85,$187.50
+Sporting Goods,Horseshoes,$21.43,$15.00
+Sporting Goods,Ice Skates,$23.63,$16.54
+Sporting Goods,In-line Skates,$34.00,$23.80
+Sporting Goods,Jump Rope,$8.75,$6.13
+Sporting Goods,Kayak,$214.28,$150.00
+Sporting Goods,Kite,$10.86,$7.60
+Sporting Goods,Knee Pads,$13.99,$9.79
+Sporting Goods,Lacrosse,$26.78,$18.75
+Sporting Goods,Lacrosse Stick,$21.43,$15.00
+Sporting Goods,Life Jacket,$21.43,$15.00
+Sporting Goods,Life Preserver,$21.43,$15.00
+Sporting Goods,Martial Arts,$26.78,$18.75
+Sporting Goods,Mask,$13.99,$9.79
+Sporting Goods,Mountain Bike,$160.71,$112.50
+Sporting Goods,Oar,$21.43,$15.00
+Sporting Goods,Paddle,$21.43,$15.00
+Sporting Goods,Paintball,$53.57,$37.50
+Sporting Goods,Parachute,$267.85,$187.50
+Sporting Goods,Ping Pong Table,$106.94,$74.86
+Sporting Goods,Pogo Stick,$21.43,$15.00
+Sporting Goods,Pool Cue,$16.33,$11.43
+Sporting Goods,Pool Table,$427.49,$299.24
+Sporting Goods,Punching Bag,$42.74,$29.92
+Sporting Goods,Racquet,$21.43,$15.00
+Sporting Goods,Racquetball,$21.43,$15.00
+Sporting Goods,Raft,$85.71,$60.00
+Sporting Goods,Riding,$53.57,$37.50
+Sporting Goods,Roller Skates,$27.10,$18.97
+Sporting Goods,Rollerblades,$34.00,$23.80
+Sporting Goods,Rowing Machine,$106.94,$74.86
+Sporting Goods,Saddle,$106.94,$74.86
+Sporting Goods,Sailboat,$535.70,$375.00
+Sporting Goods,Scooter,$32.14,$22.50
+Sporting Goods,Scuba,$106.94,$74.86
+Sporting Goods,Shuffleboard,$85.71,$60.00
+Sporting Goods,Skateboard,$26.78,$18.75
+Sporting Goods,Skates,$26.78,$18.75
+Sporting Goods,Ski Boots,$50.08,$35.06
+Sporting Goods,Ski Rack,$42.74,$29.92
+Sporting Goods,Skis,$85.71,$60.00
+Sporting Goods,Sled,$21.43,$15.00
+Sporting Goods,Sleeping Bag,$26.78,$18.75
+Sporting Goods,Snorkel,$16.33,$11.43
+Sporting Goods,Snowboard,$106.94,$74.86
+Sporting Goods,Soccer Ball,$13.99,$9.79
+Sporting Goods,Softball,$5.36,$3.75
+Sporting Goods,Stair Stepper,$85.71,$60.00
+Sporting Goods,Stationary Bike,$106.94,$74.86
+Sporting Goods,Stopwatch,$13.99,$9.79
+Sporting Goods,Surfboard,$106.94,$74.86
+Sporting Goods,Tackle Box,$21.43,$15.00
+Sporting Goods,Tennis,$21.43,$15.00
+Sporting Goods,Tennis Racquet,$21.43,$15.00
+Sporting Goods,Tent,$42.74,$29.92
+Sporting Goods,Toboggan,$26.78,$18.75
+Sporting Goods,Treadmill,$214.28,$150.00
+Sporting Goods,Tricycle,$20.23,$14.16
+Sporting Goods,Unicycle,$42.74,$29.92
+Sporting Goods,Volleyball,$13.99,$9.79
+Sporting Goods,Waders,$26.78,$18.75
+Sporting Goods,Wagon,$27.61,$19.33
+Sporting Goods,Water Skis,$85.71,$60.00
+Sporting Goods,Weight Bench,$85.71,$60.00
+Sporting Goods,Weights,$21.43,$15.00
+Sporting Goods,Wet Suit,$42.74,$29.92
+Sporting Goods,Yoga Mat,$16.33,$11.43
+"Toys, Hobbies & Gaming",Action Figure,$8.75,$6.13
+"Toys, Hobbies & Gaming",Air Hockey Table,$106.94,$74.86
+"Toys, Hobbies & Gaming",Ant Farm,$10.86,$7.60
+"Toys, Hobbies & Gaming",Art Supplies,$16.33,$11.43
+"Toys, Hobbies & Gaming",BB Gun,$21.43,$15.00
+"Toys, Hobbies & Gaming",Ball Pit,$42.74,$29.92
+"Toys, Hobbies & Gaming",Barbie,$13.99,$9.79
+"Toys, Hobbies & Gaming",Beanie Baby,$5.36,$3.75
+"Toys, Hobbies & Gaming",Big Wheel,$26.78,$18.75
+"Toys, Hobbies & Gaming",Blocks,$8.12,$5.68
+"Toys, Hobbies & Gaming",Board Game,$13.99,$9.79
+"Toys, Hobbies & Gaming",Bouncy Castle,$106.94,$74.86
+"Toys, Hobbies & Gaming",Bowling Set,$13.99,$9.79
+"Toys, Hobbies & Gaming",Building Blocks,$13.99,$9.79
+"Toys, Hobbies & Gaming",Cabbage Patch Kid,$18.89,$13.22
+"Toys, Hobbies & Gaming",Car,$5.36,$3.75
+"Toys, Hobbies & Gaming",Card Game,$8.75,$6.13
+"Toys, Hobbies & Gaming",Chalkboard,$18.89,$13.22
+"Toys, Hobbies & Gaming",Chemistry Set,$21.43,$15.00
+"Toys, Hobbies & Gaming",Chess Set,$18.89,$13.22
+"Toys, Hobbies & Gaming",Clay,$8.75,$6.13
+"Toys, Hobbies & Gaming",Coloring Book,$5.36,$3.75
+"Toys, Hobbies & Gaming",Comic Book,$4.31,$1.72
+"Toys, Hobbies & Gaming",Crayons,$4.19,$2.93
+"Toys, Hobbies & Gaming",Dartboard,$26.78,$18.75
+"Toys, Hobbies & Gaming",Doll,$13.99,$9.79
+"Toys, Hobbies & Gaming",Doll Clothes,$8.75,$6.13
+"Toys, Hobbies & Gaming",Dollhouse,$53.57,$37.50
+"Toys, Hobbies & Gaming",Dominoes,$10.86,$7.60
+"Toys, Hobbies & Gaming",Easy-Bake Oven,$21.43,$15.00
+"Toys, Hobbies & Gaming",Erector Set,$26.78,$18.75
+"Toys, Hobbies & Gaming",Etch A Sketch,$13.99,$9.79
+"Toys, Hobbies & Gaming",Foosball Table,$106.94,$74.86
+"Toys, Hobbies & Gaming",GI Joe,$10.86,$7.60
+"Toys, Hobbies & Gaming",Game,$13.99,$9.79
+"Toys, Hobbies & Gaming",Hobby,$21.43,$15.00
+"Toys, Hobbies & Gaming",Hot Wheels,$4.19,$2.93
+"Toys, Hobbies & Gaming",Hula Hoop,$8.75,$6.13
+"Toys, Hobbies & Gaming",Jack-in-the-Box,$13.99,$9.79
+"Toys, Hobbies & Gaming",Jacks,$5.36,$3.75
+"Toys, Hobbies & Gaming",Jigsaw Puzzle,$10.86,$7.60
+"Toys, Hobbies & Gaming",Jumprope,$8.75,$6.13
+"Toys, Hobbies & Gaming",K'NEX,$21.43,$15.00
+"Toys, Hobbies & Gaming",Kite,$10.86,$7.60
+"Toys, Hobbies & Gaming",Legos,$18.89,$13.22
+"Toys, Hobbies & Gaming",Lincoln Logs,$18.89,$13.22
+"Toys, Hobbies & Gaming",Lite-Brite,$16.33,$11.43
+"Toys, Hobbies & Gaming",Magic 8-Ball,$10.86,$7.60
+"Toys, Hobbies & Gaming",Magic Kit,$18.89,$13.22
+"Toys, Hobbies & Gaming",Marbles,$5.36,$3.75
+"Toys, Hobbies & Gaming",Microscope,$32.14,$22.50
+"Toys, Hobbies & Gaming",Model,$21.43,$15.00
+"Toys, Hobbies & Gaming",Mr. Potato Head,$10.86,$7.60
+"Toys, Hobbies & Gaming",My Little Pony,$10.86,$7.60
+"Toys, Hobbies & Gaming",Paint,$8.75,$6.13
+"Toys, Hobbies & Gaming",Paintball Gun,$53.57,$37.50
+"Toys, Hobbies & Gaming",Play-Doh,$8.75,$6.13
+"Toys, Hobbies & Gaming",Playhouse,$85.71,$60.00
+"Toys, Hobbies & Gaming",Playskool,$16.33,$11.43
+"Toys, Hobbies & Gaming",Pokemon,$8.75,$6.13
+"Toys, Hobbies & Gaming",Pool Table,$427.49,$299.24
+"Toys, Hobbies & Gaming",Puppet,$8.75,$6.13
+"Toys, Hobbies & Gaming",Puzzle,$10.86,$7.60
+"Toys, Hobbies & Gaming",R/C Car,$26.78,$18.75
+"Toys, Hobbies & Gaming",Radio Flyer,$27.61,$19.33
+"Toys, Hobbies & Gaming",Raggedy Ann,$16.33,$11.43
+"Toys, Hobbies & Gaming",Rattles,$4.07,$2.85
+"Toys, Hobbies & Gaming",Remote Control Car,$26.78,$18.75
+"Toys, Hobbies & Gaming",Rocking Horse,$32.14,$22.50
+"Toys, Hobbies & Gaming",Rubik's Cube,$8.75,$6.13
+"Toys, Hobbies & Gaming",Science Kit,$21.43,$15.00
+"Toys, Hobbies & Gaming",Scooter,$32.14,$22.50
+"Toys, Hobbies & Gaming",See 'n Say,$13.99,$9.79
+"Toys, Hobbies & Gaming",Silly Putty,$4.19,$2.93
+"Toys, Hobbies & Gaming",Slinky,$5.36,$3.75
+"Toys, Hobbies & Gaming",Slot Cars,$42.74,$29.92
+"Toys, Hobbies & Gaming",Stamp Collection,$32.14,$22.50
+"Toys, Hobbies & Gaming",Star Wars,$10.86,$7.60
+"Toys, Hobbies & Gaming",Stuffed Animal,$10.86,$7.60
+"Toys, Hobbies & Gaming",Swing Set,$160.71,$112.50
+"Toys, Hobbies & Gaming",System: Atari,$42.74,$29.92
+"Toys, Hobbies & Gaming",System: Game Boy,$32.14,$22.50
+"Toys, Hobbies & Gaming",System: GameCube,$42.74,$29.92
+"Toys, Hobbies & Gaming",System: Intellivision,$42.74,$29.92
+"Toys, Hobbies & Gaming",System: N64,$42.74,$29.92
+"Toys, Hobbies & Gaming",System: NES,$42.74,$29.92
+"Toys, Hobbies & Gaming",System: Nintendo DS,$53.57,$37.50
+"Toys, Hobbies & Gaming",System: PlayStation,$51.11,$35.78
+"Toys, Hobbies & Gaming",System: PlayStation 2,$58.31,$40.82
+"Toys, Hobbies & Gaming",System: PSP,$52.60,$36.82
+"Toys, Hobbies & Gaming",System: Sega Dreamcast,$52.30,$36.61
+"Toys, Hobbies & Gaming",System: Sega Game Gear,$31.72,$22.20
+"Toys, Hobbies & Gaming",System: Sega Genesis,$38.59,$27.01
+"Toys, Hobbies & Gaming",System: Sega Saturn,$35.16,$24.61
+"Toys, Hobbies & Gaming",System: Xbox,$65.52,$45.86
+"Toys, Hobbies & Gaming",Telescope,$49.69,$34.78
+"Toys, Hobbies & Gaming",Tinker Toys: Junior,$9.43,$6.60
+"Toys, Hobbies & Gaming",Tinker Toys: Original,$10.49,$7.34
+"Toys, Hobbies & Gaming",Toy Box,$21.80,$15.26
+"Toys, Hobbies & Gaming",Tricycle,$20.23,$14.16
+"Toys, Hobbies & Gaming",View-Master,$7.95,$5.57
+"Toys, Hobbies & Gaming",Wagon,$27.61,$19.33
+"Toys, Hobbies & Gaming",Walkie Talkies,$21.43,$15.00
+"Toys, Hobbies & Gaming",Water Gun,$8.75,$6.13
+"Toys, Hobbies & Gaming",Whiffle Ball,$5.36,$3.75
+"Toys, Hobbies & Gaming",Yo-yo,$5.36,$3.75`;
+
+            // --- STATE & DOM ELEMENTS ---
+            let donationData = [];
+            let donations = [];
+            const categorySelect = document.getElementById('item-category');
+            const descriptionSelect = document.getElementById('item-description');
+            const highValueEl = document.getElementById('high-value');
+            const mediumValueEl = document.getElementById('medium-value');
+            const itemValuesEl = document.getElementById('item-values');
+            const highQtyInput = document.getElementById('high-quality-qty');
+            const mediumQtyInput = document.getElementById('medium-quality-qty');
+            const addDonationBtn = document.getElementById('add-donation-btn');
+            const donationForm = document.getElementById('donation-form');
+            const tabsNav = document.getElementById('tabs-nav');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            const donationsTableBody = document.getElementById('donations-table-body');
+            const totalValueEl = document.getElementById('total-value');
+            const emptyStateEl = document.getElementById('empty-state');
+            const listContainerEl = document.getElementById('donations-list-container');
+            const donationCountBadge = document.getElementById('donation-count');
+
+            // --- HELPER FUNCTIONS ---
+            const formatCurrency = (num) => num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            const parseCurrency = (str) => parseFloat(str.replace(/[^0-9.-]+/g,""));
+
+            /**
+             * Parses the raw CSV string into an array of objects.
+             * @param {string} csv - The raw CSV data.
+             * @returns {Array<Object>} An array of item objects.
+             */
+            function parseCSV(csv) {
+                const lines = csv.trim().split('\n');
+                const headers = lines.shift().split(',').map(h => h.trim());
+                return lines.map(line => {
+                    // This simple regex handles commas inside quoted strings
+                    const values = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+                    const obj = {};
+                    headers.forEach((header, i) => {
+                         const value = (values[i] || '').replace(/"/g, '').trim();
+                         obj[header] = value;
+                    });
+                    return obj;
+                }).filter(item => item['Item Description']); // Filter out empty lines
+            }
+            
+            // --- DATA INITIALIZATION ---
+            function initialize() {
+                donationData = parseCSV(csvData);
+                const categories = [...new Set(donationData.map(item => item['Item Category']))].sort();
+                populateCategories(categories);
+                setupEventListeners();
+            }
+
+            function populateCategories(categories) {
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categorySelect.appendChild(option);
+                });
+            }
+
+            // --- EVENT HANDLERS & LOGIC ---
+            function handleCategoryChange(e) {
+                const selectedCategory = e.target.value;
+                descriptionSelect.innerHTML = '<option>Select an item</option>'; // Reset
+                itemValuesEl.classList.add('hidden');
+                descriptionSelect.disabled = true;
+                addDonationBtn.disabled = true;
+
+                if (selectedCategory && selectedCategory !== 'Select a category') {
+                    const items = donationData.filter(item => item['Item Category'] === selectedCategory);
+                    items.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item['Item Description'];
+                        option.textContent = item['Item Description'];
+                        descriptionSelect.appendChild(option);
+                    });
+                    descriptionSelect.disabled = false;
+                }
+            }
+            
+            function handleDescriptionChange(e) {
+                const selectedDescription = e.target.value;
+                itemValuesEl.classList.add('hidden');
+                updateButtonState();
+
+                if (selectedDescription && selectedDescription !== 'Select an item') {
+                    const item = findItemByDescription(selectedDescription);
+                    if (item) {
+                        highValueEl.textContent = item['High Quality Value'] || 'N/A';
+                        mediumValueEl.textContent = item['Medium Quality Value'] || 'N/A';
+                        itemValuesEl.classList.remove('hidden');
+                    }
+                }
+            }
+
+            function findItemByDescription(description) {
+                 return donationData.find(item => item['Item Description'] === description && item['Item Category'] === categorySelect.value);
+            }
+
+            function handleFormSubmit(e) {
+                e.preventDefault();
+                const highQty = parseInt(highQtyInput.value, 10);
+                const mediumQty = parseInt(mediumQtyInput.value, 10);
+                const item = findItemByDescription(descriptionSelect.value);
+
+                if (!item) return;
+
+                if (highQty > 0) {
+                    const value = parseCurrency(item['High Quality Value']);
+                    donations.push({
+                        id: Date.now() + Math.random(),
+                        description: item['Item Description'],
+                        quality: 'High',
+                        qty: highQty,
+                        itemValue: value,
+                        totalValue: value * highQty,
+                    });
+                }
+
+                if (mediumQty > 0) {
+                    const value = parseCurrency(item['Medium Quality Value']);
+                    donations.push({
+                        id: Date.now() + Math.random(),
+                        description: item['Item Description'],
+                        quality: 'Medium',
+                        qty: mediumQty,
+                        itemValue: value,
+                        totalValue: value * mediumQty,
+                    });
+                }
+                
+                renderDonations();
+                resetForm();
+            }
+
+            function resetForm() {
+                donationForm.reset();
+                descriptionSelect.innerHTML = '<option>Select an item</option>';
+                descriptionSelect.disabled = true;
+                itemValuesEl.classList.add('hidden');
+                categorySelect.selectedIndex = 0;
+                addDonationBtn.disabled = true;
+            }
+
+            function renderDonations() {
+                donationsTableBody.innerHTML = ''; // Clear existing rows
+                let totalValue = 0;
+
+                if (donations.length === 0) {
+                    emptyStateEl.classList.remove('hidden');
+                    listContainerEl.classList.add('hidden');
+                    donationCountBadge.classList.add('hidden');
+                    return;
+                }
+
+                emptyStateEl.classList.add('hidden');
+                listContainerEl.classList.remove('hidden');
+                donationCountBadge.classList.remove('hidden');
+                donationCountBadge.textContent = donations.length;
+
+                donations.forEach(donation => {
+                    totalValue += donation.totalValue;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${donation.description}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${donation.quality === 'High' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}">
+                                ${donation.quality}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">${donation.qty}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">${formatCurrency(donation.itemValue)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold text-right">${formatCurrency(donation.totalValue)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button data-id="${donation.id}" class="remove-btn text-red-600 hover:text-red-900">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </td>
+                    `;
+                    donationsTableBody.appendChild(row);
+                });
+
+                totalValueEl.textContent = formatCurrency(totalValue);
+            }
+            
+            function handleRemoveDonation(e) {
+                if (e.target.closest('.remove-btn')) {
+                    const button = e.target.closest('.remove-btn');
+                    const idToRemove = parseFloat(button.dataset.id);
+                    donations = donations.filter(d => d.id !== idToRemove);
+                    renderDonations();
+                }
+            }
+
+            function updateButtonState() {
+                const isItemSelected = descriptionSelect.value && descriptionSelect.value !== 'Select an item';
+                const hasQuantity = parseInt(highQtyInput.value, 10) > 0 || parseInt(mediumQtyInput.value, 10) > 0;
+                addDonationBtn.disabled = !(isItemSelected && hasQuantity);
+            }
+
+            function handleTabClick(e) {
+                 e.preventDefault();
+                const clickedTab = e.target.closest('a[data-tab]');
+                if (!clickedTab) return;
+
+                const tabId = clickedTab.dataset.tab;
+                
+                // Update nav styles
+                tabsNav.querySelectorAll('a').forEach(a => {
+                    a.classList.remove('tab-active', 'border-blue-600', 'text-blue-600');
+                    a.classList.add('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+                });
+                clickedTab.classList.add('tab-active');
+                clickedTab.classList.remove('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+
+
+                // Update content visibility
+                tabPanes.forEach(pane => {
+                    if (pane.id === `${tabId}-tab`) {
+                        pane.classList.remove('hidden');
+                    } else {
+                        pane.classList.add('hidden');
+                    }
+                });
+            }
+
+            // --- EVENT LISTENERS SETUP ---
+            function setupEventListeners() {
+                categorySelect.addEventListener('change', handleCategoryChange);
+                descriptionSelect.addEventListener('change', handleDescriptionChange);
+                highQtyInput.addEventListener('input', updateButtonState);
+                mediumQtyInput.addEventListener('input', updateButtonState);
+                donationForm.addEventListener('submit', handleFormSubmit);
+                tabsNav.addEventListener('click', handleTabClick);
+                donationsTableBody.addEventListener('click', handleRemoveDonation);
+            }
+
+            // --- START THE APP ---
+            initialize();
+        });
+    </script>
+</body>
+</html>
