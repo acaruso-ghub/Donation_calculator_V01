@@ -49,6 +49,15 @@
             <!-- Calculator Tab -->
             <div id="calculator-tab" class="tab-pane bg-white p-6 rounded-lg shadow-md transition-opacity duration-300">
                 <form id="donation-form">
+                    <!-- Search Box Section -->
+                    <div class="mb-6 relative">
+                        <label for="item-search" class="block text-sm font-medium text-gray-700">Search for an Item</label>
+                        <input type="text" id="item-search" placeholder="e.g., Men's T-Shirt, Coffee Table..." class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                        <div id="search-results" class="hidden absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 shadow-lg max-h-60 overflow-y-auto">
+                            <!-- Search results will be populated here -->
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Item Category -->
                         <div>
@@ -1380,6 +1389,8 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
             const mediumQtyInput = document.getElementById('medium-quality-qty');
             const addDonationBtn = document.getElementById('add-donation-btn');
             const donationForm = document.getElementById('donation-form');
+            const searchInput = document.getElementById('item-search');
+            const searchResultsContainer = document.getElementById('search-results');
             const tabsNav = document.getElementById('tabs-nav');
             const tabPanes = document.querySelectorAll('.tab-pane');
             const donationsTableBody = document.getElementById('donations-table-body');
@@ -1507,6 +1518,60 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
             }
 
             // --- EVENT HANDLERS & LOGIC ---
+
+            function handleSearchInput(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                searchResultsContainer.innerHTML = '';
+
+                if (searchTerm.length < 2) {
+                    searchResultsContainer.classList.add('hidden');
+                    return;
+                }
+
+                const results = donationData.filter(item => 
+                    item['Item Description'].toLowerCase().includes(searchTerm)
+                ).slice(0, 10); // Limit to 10 results for performance
+
+                if (results.length > 0) {
+                    results.forEach(item => {
+                        const resultEl = document.createElement('div');
+                        resultEl.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm';
+                        resultEl.textContent = `${item['Item Description']} (${item['Item Category']})`;
+                        resultEl.dataset.description = item['Item Description'];
+                        resultEl.dataset.category = item['Item Category'];
+                        searchResultsContainer.appendChild(resultEl);
+                    });
+                    searchResultsContainer.classList.remove('hidden');
+                } else {
+                    const noResultEl = document.createElement('div');
+                    noResultEl.className = 'px-4 py-2 text-sm text-gray-500';
+                    noResultEl.textContent = 'No items found.';
+                    searchResultsContainer.appendChild(noResultEl);
+                    searchResultsContainer.classList.remove('hidden');
+                }
+            }
+
+            function handleSearchResultClick(e) {
+                const target = e.target;
+                if (target.dataset.description && target.dataset.category) {
+                    const { description, category } = target.dataset;
+
+                    // Set the category dropdown
+                    categorySelect.value = category;
+                    // Manually trigger the change event to populate the description dropdown
+                    categorySelect.dispatchEvent(new Event('change'));
+
+                    // Set the description dropdown
+                    descriptionSelect.value = description;
+                    // Manually trigger the change event to update the value display
+                    descriptionSelect.dispatchEvent(new Event('change'));
+
+                    // Clear search
+                    searchInput.value = '';
+                    searchResultsContainer.classList.add('hidden');
+                }
+            }
+            
             function handleCategoryChange(e) {
                 const selectedCategory = e.target.value;
                 descriptionSelect.innerHTML = '<option>Select an item</option>'; // Reset
@@ -1680,6 +1745,8 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
             function setupEventListeners() {
                 const clearListButton = document.getElementById('clear-list-button');
 
+                searchInput.addEventListener('input', handleSearchInput);
+                searchResultsContainer.addEventListener('click', handleSearchResultClick);
                 categorySelect.addEventListener('change', handleCategoryChange);
                 descriptionSelect.addEventListener('change', handleDescriptionChange);
                 highQtyInput.addEventListener('input', updateButtonState);
@@ -1691,6 +1758,13 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
                 clearListButton.addEventListener('click', handleClearList);
                 charityNameInput.addEventListener('input', saveData);
                 donationDateInput.addEventListener('change', saveData);
+                
+                // Hide search results when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!searchInput.contains(e.target) && !searchResultsContainer.contains(e.target)) {
+                        searchResultsContainer.classList.add('hidden');
+                    }
+                });
             }
 
             // --- START THE APP ---
