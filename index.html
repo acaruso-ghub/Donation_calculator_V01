@@ -136,8 +136,11 @@
                     <div class="mt-6 pt-4 border-t-2 border-dashed text-right">
                         <h3 class="text-xl font-semibold text-gray-800">Total Donation Value: <span id="total-value" class="text-blue-600">$0.00</span></h3>
                     </div>
-                    <!-- Export as CSV Section -->
-                    <div class="mt-6 pt-6 border-t text-right">
+                    <!-- Action Buttons Section -->
+                    <div class="mt-6 pt-6 border-t text-right space-x-2">
+                         <button id="clear-list-button" disabled class="inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            Clear List
+                        </button>
                         <button id="export-csv-button" disabled class="inline-flex items-center justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed">
                             Download as CSV
                         </button>
@@ -1385,6 +1388,7 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
             const listContainerEl = document.getElementById('donations-list-container');
             const donationCountBadge = document.getElementById('donation-count');
             const exportCsvButton = document.getElementById('export-csv-button');
+            const charityNameInput = document.getElementById('charity-name');
             const donationDateInput = document.getElementById('donation-date');
             
             // --- CORE APP FUNCTIONS ---
@@ -1392,7 +1396,7 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
             function handleCsvExport() {
                 if (donations.length === 0) return;
 
-                const charityName = document.getElementById('charity-name').value || 'N/A';
+                const charityName = charityNameInput.value || 'N/A';
                 const donationDate = donationDateInput.value || 'N/A';
 
                 let csvContent = "data:text/csv;charset=utf-8,";
@@ -1450,13 +1454,41 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
                 }).filter(item => item['Item Description']); // Filter out empty lines
             }
             
-            // --- DATA INITIALIZATION ---
+            // --- DATA INITIALIZATION & AUTOSAVE ---
+            const STORAGE_KEY = 'donationAppData';
+
+            function saveData() {
+                const dataToSave = {
+                    donations: donations,
+                    charityName: charityNameInput.value,
+                    donationDate: donationDateInput.value
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+            }
+
+            function loadData() {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    donations = parsedData.donations || [];
+                    charityNameInput.value = parsedData.charityName || '';
+                    if (parsedData.donationDate) {
+                        donationDateInput.value = parsedData.donationDate;
+                    }
+                }
+            }
+
             function initialize() {
                 donationData = parseCSV(csvData);
                 const categories = [...new Set(donationData.map(item => item['Item Category']))].sort();
                 populateCategories(categories);
+                
+                // Set default date before loading, so it's there if no saved date exists.
+                donationDateInput.valueAsDate = new Date(); 
+                
+                loadData(); // Load saved data from localStorage
+                renderDonations(); // Render any loaded donations
                 setupEventListeners();
-                donationDateInput.valueAsDate = new Date();
             }
 
             function populateCategories(categories) {
@@ -1542,6 +1574,7 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
                     });
                 }
                 
+                saveData();
                 renderDonations();
                 resetForm();
             }
@@ -1559,42 +1592,42 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
                 donationsTableBody.innerHTML = ''; // Clear existing rows
                 let totalValue = 0;
 
-                exportCsvButton.disabled = donations.length === 0;
+                const hasDonations = donations.length > 0;
+                exportCsvButton.disabled = !hasDonations;
+                document.getElementById('clear-list-button').disabled = !hasDonations;
 
-                if (donations.length === 0) {
+                if (!hasDonations) {
                     emptyStateEl.classList.remove('hidden');
                     listContainerEl.classList.add('hidden');
                     donationCountBadge.classList.add('hidden');
-                    return;
+                } else {
+                    emptyStateEl.classList.add('hidden');
+                    listContainerEl.classList.remove('hidden');
+                    donationCountBadge.classList.remove('hidden');
+                    donationCountBadge.textContent = donations.length;
+
+                    donations.forEach(donation => {
+                        totalValue += donation.totalValue;
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${donation.description}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${donation.quality === 'High' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}">
+                                    ${donation.quality}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">${donation.qty}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">${formatCurrency(donation.itemValue)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold text-right">${formatCurrency(donation.totalValue)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button data-id="${donation.id}" class="remove-btn text-red-600 hover:text-red-900">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </td>
+                        `;
+                        donationsTableBody.appendChild(row);
+                    });
                 }
-
-                emptyStateEl.classList.add('hidden');
-                listContainerEl.classList.remove('hidden');
-                donationCountBadge.classList.remove('hidden');
-                donationCountBadge.textContent = donations.length;
-
-                donations.forEach(donation => {
-                    totalValue += donation.totalValue;
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${donation.description}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${donation.quality === 'High' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}">
-                                ${donation.quality}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">${donation.qty}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">${formatCurrency(donation.itemValue)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold text-right">${formatCurrency(donation.totalValue)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button data-id="${donation.id}" class="remove-btn text-red-600 hover:text-red-900">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                            </button>
-                        </td>
-                    `;
-                    donationsTableBody.appendChild(row);
-                });
-
                 totalValueEl.textContent = formatCurrency(totalValue);
             }
             
@@ -1603,8 +1636,17 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
                     const button = e.target.closest('.remove-btn');
                     const idToRemove = parseFloat(button.dataset.id);
                     donations = donations.filter(d => d.id !== idToRemove);
+                    saveData();
                     renderDonations();
                 }
+            }
+
+            function handleClearList() {
+                donations = [];
+                charityNameInput.value = '';
+                donationDateInput.valueAsDate = new Date();
+                saveData();
+                renderDonations();
             }
 
             function updateButtonState() {
@@ -1630,6 +1672,8 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
 
             // --- EVENT LISTENERS SETUP ---
             function setupEventListeners() {
+                const clearListButton = document.getElementById('clear-list-button');
+
                 categorySelect.addEventListener('change', handleCategoryChange);
                 descriptionSelect.addEventListener('change', handleDescriptionChange);
                 highQtyInput.addEventListener('input', updateButtonState);
@@ -1638,6 +1682,9 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
                 tabsNav.addEventListener('click', handleTabClick);
                 donationsTableBody.addEventListener('click', handleRemoveDonation);
                 exportCsvButton.addEventListener('click', handleCsvExport);
+                clearListButton.addEventListener('click', handleClearList);
+                charityNameInput.addEventListener('input', saveData);
+                donationDateInput.addEventListener('change', saveData);
             }
 
             // --- START THE APP ---
@@ -1646,4 +1693,3 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
     </script>
 </body>
 </html>
-
