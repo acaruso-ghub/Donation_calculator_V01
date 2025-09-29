@@ -1400,15 +1400,21 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
                 const donationDate = donationDateInput.value || 'N/A';
 
                 let csvContent = "data:text/csv;charset=utf-8,";
-                const headers = ["Charity", "Donation Date", "Description", "Quality", "Qty", "Item Value", "Total Value"];
-                csvContent += headers.join(",") + "\r\n";
                 
+                // Row 1: Charity and Date
+                csvContent += `Charity:,${charityName},Date:,${donationDate}\r\n`;
+                // Row 2: Blank line
+                csvContent += "\r\n";
+                // Row 3: Headers for items
+                const headers = ["Description", "Quality", "Qty", "Item Value", "Total Value"];
+                csvContent += headers.join(",") + "\r\n";
+
                 let totalValue = 0;
                 donations.forEach(donation => {
                     totalValue += donation.totalValue;
                     // Escape commas in description by enclosing in quotes
                     const description = `"${donation.description}"`; 
-                    const row = [charityName, donationDate, description, donation.quality, donation.qty, donation.itemValue, donation.totalValue];
+                    const row = [description, donation.quality, donation.qty, donation.itemValue, donation.totalValue];
                     csvContent += row.join(",") + "\r\n";
                 });
                 
@@ -1416,7 +1422,7 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
                 csvContent += "\r\n"; // Blank line for spacing
                 const safeCharityName = charityName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
                 const filename = `donation_report_${safeCharityName}_${donationDate}.csv`;
-                csvContent += `,,,,,Total:,${totalValue.toFixed(2)}\r\n`;
+                csvContent += `,,,Total:,${totalValue.toFixed(2)}\r\n`;
 
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
@@ -1693,3 +1699,4 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
     </script>
 </body>
 </html>
+
