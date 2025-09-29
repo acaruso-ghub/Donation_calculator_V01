@@ -104,6 +104,16 @@
                     <p class="mt-1 text-sm text-gray-500">Your donated items will appear here.</p>
                 </div>
                 <div id="donations-list-container" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 pb-6 border-b">
+                        <div>
+                            <label for="charity-name" class="block text-sm font-medium text-gray-700">Charity Name</label>
+                            <input type="text" name="charity-name" id="charity-name" placeholder="e.g., Goodwill" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label for="donation-date" class="block text-sm font-medium text-gray-700">Donation Date</label>
+                            <input type="date" name="donation-date" id="donation-date" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -1375,14 +1385,18 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
             const listContainerEl = document.getElementById('donations-list-container');
             const donationCountBadge = document.getElementById('donation-count');
             const exportCsvButton = document.getElementById('export-csv-button');
+            const donationDateInput = document.getElementById('donation-date');
             
             // --- CORE APP FUNCTIONS ---
 
             function handleCsvExport() {
                 if (donations.length === 0) return;
 
+                const charityName = document.getElementById('charity-name').value || 'N/A';
+                const donationDate = donationDateInput.value || 'N/A';
+
                 let csvContent = "data:text/csv;charset=utf-8,";
-                const headers = ["Description", "Quality", "Qty", "Item Value", "Total Value"];
+                const headers = ["Charity", "Donation Date", "Description", "Quality", "Qty", "Item Value", "Total Value"];
                 csvContent += headers.join(",") + "\r\n";
                 
                 let totalValue = 0;
@@ -1390,18 +1404,20 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
                     totalValue += donation.totalValue;
                     // Escape commas in description by enclosing in quotes
                     const description = `"${donation.description}"`; 
-                    const row = [description, donation.quality, donation.qty, donation.itemValue, donation.totalValue];
+                    const row = [charityName, donationDate, description, donation.quality, donation.qty, donation.itemValue, donation.totalValue];
                     csvContent += row.join(",") + "\r\n";
                 });
                 
                 // Add total
                 csvContent += "\r\n"; // Blank line for spacing
-                csvContent += `,,,Total:,${totalValue.toFixed(2)}\r\n`;
+                const safeCharityName = charityName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                const filename = `donation_report_${safeCharityName}_${donationDate}.csv`;
+                csvContent += `,,,,,Total:,${totalValue.toFixed(2)}\r\n`;
 
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "donation_report.csv");
+                link.setAttribute("download", filename);
                 document.body.appendChild(link); // Required for Firefox
 
                 link.click();
@@ -1440,6 +1456,7 @@ Sporting Goods,Yoga Mat,$16.33,$11.43
                 const categories = [...new Set(donationData.map(item => item['Item Category']))].sort();
                 populateCategories(categories);
                 setupEventListeners();
+                donationDateInput.valueAsDate = new Date();
             }
 
             function populateCategories(categories) {
